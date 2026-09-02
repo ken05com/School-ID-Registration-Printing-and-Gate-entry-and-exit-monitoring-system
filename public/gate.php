@@ -60,13 +60,19 @@ $recent = db()->query("SELECT gl.direction, gl.status, gl.scanned_at, s.full_nam
 
 <div class="grid grid-2">
   <div class="card">
-    <div class="section-title">Scan Student QR</div>
+    <div class="section-title">Scan Student Code</div>
     <div class="gate-screen">
-      <div class="id-field-qr" style="margin-bottom:.5rem">Point the QR card at the camera, or type the code below.</div>
-      <video id="scanner" width="100%" playsinline muted style="border-radius:10px;background:#2d2023;max-height:220px"></video>
-      <p class="muted" style="font-size:.8rem;margin:.6rem 0">Camera scanning uses the browser's BarcodeDetector (Chrome/Edge).</p>
+      <div class="scanner-wrap" id="scannerWrap">
+        <video id="scanner" playsinline muted></video>
+        <div class="scanner-overlay">
+          <div class="scanner-crosshair"></div>
+          <div class="scanner-line"></div>
+        </div>
+        <div class="scanner-status" id="scannerStatus">Initializing camera…</div>
+      </div>
+      <p class="muted" style="font-size:.8rem;margin:.6rem 0">Point the QR code or barcode at the camera. Auto-scans when detected.</p>
       <form method="post" class="mt-1">
-        <input type="text" name="qr" id="qrinput" class="gate-input" placeholder="Enter or scan QR code…" autofocus>
+        <input type="text" name="qr" id="qrinput" class="gate-input" placeholder="Or type the code manually…" autofocus>
         <button class="btn btn-primary btn-block mt-1" type="submit">Check ID</button>
       </form>
     </div>
@@ -103,4 +109,5 @@ $recent = db()->query("SELECT gl.direction, gl.status, gl.scanned_at, s.full_nam
   </div>
 </div>
 
+<script src="/assets/js/zxing.js"></script>
 <?php include __DIR__ . '/../includes/footer.php'; ?>

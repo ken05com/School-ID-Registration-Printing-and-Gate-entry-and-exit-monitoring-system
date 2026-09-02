@@ -1,7 +1,7 @@
 <?php
 require_once __DIR__ . '/../includes/auth.php';
 require_once __DIR__ . '/../includes/functions.php';
-$user = require_role(['admin', 'registrar', 'id_staff']);
+$user = require_role(['admin', 'registrar']);
 $page = 'register';
 $title = 'Student Registration';
 
@@ -38,7 +38,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 ?>
 <?php include __DIR__ . '/../includes/header.php'; ?>
 
-<div class="card" style="max-width:760px">
+<div class="card">
   <h2>Register New Student</h2>
   <p class="muted" style="margin-top:-.5rem">Fill in the student details below. New registrations go to the Registrar for approval.</p>
   <form method="post" class="form-grid mt-2">

@@ -1,0 +1,11 @@
+# Prevent uploaded files from being executed as PHP scripts
+<IfModule mod_php.c>
+    php_flag engine off
+</IfModule>
+<IfModule mod_php7.c>
+    php_flag engine off
+</IfModule>
+RemoveHandler .php .phtml .phar
+RemoveType .php
+# Disable directory listing
+Options -Indexes

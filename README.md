@@ -46,7 +46,7 @@ dark maroon color scheme, **Inter** font.
 ## Quick Start
 
 This bundles a **private, self-contained MariaDB instance** that runs as your
-own user — **no root/sudo or system service required**.
+own user — **no root/sudo or system service required** (Linux).
 
 ### 1. Run
 
@@ -74,26 +74,91 @@ Demo accounts (password is **`password123`**):
 
 ---
 
+## Windows (XAMPP for Windows)
+
+The database layer (.env, migrations, installer) is fully cross-platform. On
+Windows, use Microsoft's `php.exe` from XAMPP instead of `start.sh`.
+
+### Install on a new Windows machine
+
+1. Install **XAMPP for Windows** (e.g. `C:\xampp`), open the **XAMPP Control
+   Panel**, and start **MySQL**.
+2. Copy this project folder anywhere (e.g. `C:\xampp\htdocs\school-id`).
+3. Double-click **`install.bat`** — or run from cmd:
+   ```bat
+   C:\xampp\php\php.exe install.php
+   ```
+   It detects `127.0.0.1:3306 root / (empty password)` (the XAMPP default),
+   creates the database, writes `.env`, and runs the migrations.
+   > Stock XAMPP MySQL uses user `root` with no password. If yours has a
+   > password, run `install.php --user=root --pass=YOURPASS --yes` instead.
+
+### Run on Windows
+
+Double-click **`start.bat`** (or run `php -S 0.0.0.0:8000 -t public` from the
+project folder). It ensures MySQL is up and serves the app at
+**http://localhost:8000**. Login accounts are identical to Linux.
+
+> The app uses root-absolute URLs (`/gate.php`, `/assets/...`), so it must be
+> served from its `public/` directory via the PHP server — not from an Apache
+> virtual host subpath.
+
+---
+
 ## Database
 
 - **Name:** `school_id_system`
-- **User / Pass:** `school` / `school123` (defined in `includes/config.php`, overridable by env vars `SCHOOL_DB_*`)
+- **DB config:** `.env` (mirrors Laravel's `DB_*` keys), read by `includes/config.php`
+- **User / Pass:** `school` / `school123` (overridable via `.env` or env vars)
 - **Data directory:** `database/data/` (includes the live datadir + example data)
 
-Tables: `users`, `students`, `school_ids`, `id_requests`, `gate_logs`, `notifications`.
+### Schema via migrations (Laravel-style)
 
-To rebuild from scratch:
+The database is built and versioned with **numbered migration files** in
+`database/migrations/` — the same concept as `php artisan migrate`. A small
+runner records each applied migration in a `migrations` tracking table.
+
+Tables: `users`, `students`, `school_ids`, `id_requests`, `gate_logs`,
+`notifications`.
+
+#### Run pending migrations
+
+```bash
+/opt/lampp/bin/php database/migrate.php
+```
+
+Only migrations not yet recorded in the `migrations` table are applied, in
+filename order. Idempotent — safe to run repeatedly on the live DB.
+
+#### Check what’s applied / pending
+
+```bash
+/opt/lampp/bin/php database/migrate.php --status
+```
+
+#### Re-run seed data only
+
+```bash
+/opt/lampp/bin/php database/migrate.php --seed
+```
+
+> `password123` hashes live in the seed migration
+> (`..._000007_seed_base_data.sql`) and must not change, or login breaks.
+
+### Rebuild from scratch (disposable database only)
+
+The legacy `database/schema.sql` is kept for reference and documents the
+original manual import. For a clean, disposable DB:
 
 ```bash
 # stop the app first (Ctrl+C), then:
 rm -rf database/data
-# restart ./start.sh, then import:
-/opt/lampp/bin/mysql --no-defaults --socket=database/mysql.sock \
-  -u school -pschool123 < database/schema.sql
+# restart ./start.sh, then run the migrations:
+/opt/lampp/bin/php database/migrate.php --fresh
 ```
 
-> `password123` hashes must match `schema.sql`. If the DB was rebuilt with a
-> different hash, drop it and re-import the file (it contains the correct hash).
+> `--fresh` **drops all tables** in the database before re-creating them. Use
+> it only on a disposable DB — never on the live one.
 
 ---
 
@@ -101,9 +166,12 @@ rm -rf database/data
 
 ```
 app/
-├── start.sh                 # one-command launcher (MySQL + PHP)
+├── start.sh                 # Linux launcher (MySQL + PHP)
+├── start.bat                # Windows launcher
+├── install.php              # one-command setup / installer (cross-platform)
+├── install.bat              # Windows installer wrapper
 ├── includes/
-│   ├── config.php           # DB config + PDO connection
+│   ├── config.php           # DB config (.env) + PDO connection
 │   ├── auth.php             # login / roles / access control
 │   ├── functions.php        # helpers (flash, notify, IDs, etc.)
 │   ├── header.php / footer.php  # shared layout
@@ -120,8 +188,11 @@ app/
 │   ├── qr.php               # QR image endpoint
 │   └── assets/              # css + js
 ├── database/
-│   ├── schema.sql           # DDL + seed data
-│   └── data/                # private MariaDB datadir
+│   ├── migrations/           # numbered migration files (Laravel-style)
+│   ├── migrate.php           # migration runner (php migrate.php)
+│   ├── schema.sql            # legacy DDL + seed (reference only)
+│   └── data/                 # private MariaDB datadir
+├── .env                      # env / DB settings (Laravel-style)
 └── qr-lib/
     └── phpqrcode.php        # QR library
 ```

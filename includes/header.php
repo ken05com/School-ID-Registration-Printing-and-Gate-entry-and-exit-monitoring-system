@@ -4,7 +4,7 @@
  * Requires: auth.php, functions.php included before.
  */
 
-$__user = $__user ?? null;
+$__user = $__user ?? ($user ?? null);
 $__page = $__page ?? '';
 $__title = $__title ?? '';
 $__flash = take_flashes();
@@ -31,20 +31,36 @@ $__unread = unread_notifications($__user['id'] ?? null);
         <div class="brand-sub">System</div>
       </div>
     </div>
+    <?php
+      $__role = $__user['role'] ?? '';
+      $__can_manage_students = in_array($__role, ['admin','registrar','id_staff'], true);
+      $__can_register       = in_array($__role, ['admin','registrar'], true);
+      $__can_print          = in_array($__role, ['admin','id_staff'], true);
+      $__can_gate           = in_array($__role, ['admin','security_guard'], true);
+      $__can_users          = $__role === 'admin';
+    ?>
     <nav class="nav">
       <a href="/dashboard.php" class="nav-link<?= $__page==='dashboard'?' active':'' ?>">
         <span class="ico">◈</span> Dashboard</a>
+      <?php if ($__can_manage_students): ?>
       <a href="/students.php" class="nav-link<?= $__page==='students'?' active':'' ?>">
         <span class="ico">▤</span> Student Management</a>
+      <?php endif; ?>
+      <?php if ($__can_register): ?>
       <a href="/register.php" class="nav-link<?= $__page==='register'?' active':'' ?>">
         <span class="ico">＋</span> Student Registration</a>
+      <?php endif; ?>
+      <?php if ($__can_print): ?>
       <a href="/id_printing.php" class="nav-link<?= $__page==='id_printing'?' active':'' ?>">
         <span class="ico">▣</span> ID Printing</a>
+      <?php endif; ?>
+      <?php if ($__can_gate): ?>
       <a href="/gate.php" class="nav-link<?= $__page==='gate'?' active':'' ?>">
         <span class="ico">◉</span> Gate Monitoring</a>
+      <?php endif; ?>
       <a href="/reports.php" class="nav-link<?= $__page==='reports'?' active':'' ?>">
         <span class="ico">◫</span> Reports</a>
-      <?php if ($__user && $__user['role'] === 'admin'): ?>
+      <?php if ($__can_users): ?>
       <a href="/users.php" class="nav-link<?= $__page==='users'?' active':'' ?>">
         <span class="ico">☰</span> User Management</a>
       <?php endif; ?>
